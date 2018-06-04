@@ -46,10 +46,10 @@ class HarCar:
         step = 1
         if self.speed > pwm_val:
             step = -1
-        print("current, set speed:", self.speed, pwm_val)
+        #print("current, set speed:", self.speed, pwm_val)
         for i in range(self.speed, pwm_val, step):
             self.speed = i
-            print("speed:", i)
+            #print("speed:", i)
             self.pwm.set_pwm(0,0,self.speed)
             if i > MIN_REVERSE and i < MIN_FORWARD:
                 # blow right on through the deadband - NO SLEEPING IN THE DEADBAND!!
@@ -74,12 +74,8 @@ class HarCar:
 
 if __name__ == '__main__':
     car = HarCar()
-    car.set_speed(100)
-    car.set_speed(-100)
-    car.set_speed(100)
-    car.set_speed(-100)
-    car.set_speed(100)
-    car.set_speed(-100)
+    car.set_speed(5)
+    car.set_speed(-5)
     
     # shut it down
     car.set_steer()
