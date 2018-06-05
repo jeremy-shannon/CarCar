@@ -8,9 +8,9 @@ This code is for the HarCar RC car prototype platform built on the Traxxas Fiest
 - Rev Spark motor driver
 - Raspberry Pi
 - Adafruit PCA9685 PWM driver module
+- Reach RTK precision GPS unit
 
 Future hardware will include:
-- Reach RTK precision GPS unit
 - Nvidia Jetson
 - Zed stereo camera
 - (other hardware TBD)
