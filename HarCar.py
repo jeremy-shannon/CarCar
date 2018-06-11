@@ -30,17 +30,17 @@ class HarCar:
         self.set_speed()
         self.set_steer()
 
-    def set_speed(self, pct_speed=0, rate=MAX_ACCEL):
-        # val should be in %, -100 = full reverse, 100 = full forward
-        if pct_speed > 100:
-            pct_speed = 100
-        elif pct_speed < -100:
-            pct_speed = -100
+    def set_speed(self, speed_val=0.0, rate=MAX_ACCEL):
+        # speed_val should be in range [-1,1], -1 = full reverse, 1 = full forward
+        if speed_val > 1.0:
+            speed_val = 1.0
+        elif speed_val < -1.0:
+            speed_val = -1.0
         pwm_val = ZERO_SPEED
-        if pct_speed < 0:
-            pwm_val = int(MIN_REVERSE + float(pct_speed)/100 * (MIN_REVERSE - MAX_REVERSE))
-        elif pct_speed > 0:
-            pwm_val = int(MIN_FORWARD + float(pct_speed)/100 * (MAX_FORWARD - MIN_FORWARD))
+        if speed_val < 0:
+            pwm_val = int(MIN_REVERSE + float(speed_val) * float(MIN_REVERSE - MAX_REVERSE))
+        elif speed_val > 0:
+            pwm_val = int(MIN_FORWARD + float(speed_val) * float(MAX_FORWARD - MIN_FORWARD))
         else:
             pwm_val = ZERO_SPEED            
         step = 1
@@ -56,13 +56,13 @@ class HarCar:
                 continue
             time.sleep(1. / rate)
 
-    def set_steer(self, pct_steer=0, rate=MAX_STEER_RATE):
-        # val should be in %, -100 = full left, 100 = full right
-        if pct_steer > 100:
-            pct_steer = 100
-        elif pct_steer < -100:
-            pct_steer = -100
-        pwm_val = int(ZERO_STEER + float(pct_steer) / 100 * (MAX_RIGHT - ZERO_STEER))
+    def set_steer(self, steer_val=0.0, rate=MAX_STEER_RATE):
+        # steer_val should be in range [-1,1], -1 = full left, 1 = full right
+        if steer_val > 1.0:
+            steer_val = 1.0
+        elif steer_val < -1.0:
+            steer_val = -1.0
+        pwm_val = int(ZERO_STEER + float(steer_val) * float(MAX_RIGHT - ZERO_STEER))
         step = 1
         if self.steer > pwm_val:
             step = -1
@@ -74,8 +74,9 @@ class HarCar:
 
 if __name__ == '__main__':
     car = HarCar()
-    car.set_speed(5)
-    car.set_speed(-5)
+    car.set_speed(.05)
+    time.sleep(1)
+    car.set_speed(-.05)
     
     # shut it down
     car.set_steer()

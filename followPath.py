@@ -53,7 +53,7 @@ location_read_thread = myThread()
 # Start Thread
 location_read_thread.start()
 
-car.set_speed(25)
+car.set_speed(0.15)
 iteration = 0
 try:
     while currentWaypointIndex < len(waypoints):
@@ -71,7 +71,7 @@ try:
             headingDiff += 2*pi
         if headingDiff > pi:
             headingDiff -= 2*pi
-        steerValue = headingDiff/(pi/2)*100
+        steerValue = headingDiff/(pi/4)
         car.set_steer(steerValue)
         if iteration % 10 == 0:
             print("Distance to waypoint: ", distToCurrentWaypoint)
