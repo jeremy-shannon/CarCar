@@ -1,5 +1,6 @@
 import time
-import Adafruit_PCA9685
+# NOTE: PWM disable
+#import Adafruit_PCA9685
 from threading import Thread
 
 # Configure PWM constants. For PCA9685 pulses are 0 to 4096
@@ -22,8 +23,9 @@ class HarCar:
     def __init__(self):             
         
         # Initialise the PCA9685 using the default address (0x40).
-        self.pwm = Adafruit_PCA9685.PCA9685()
-        self.pwm.set_pwm_freq(100)
+        # NOTE: PWM disable
+        #self.pwm = Adafruit_PCA9685.PCA9685()
+        #self.pwm.set_pwm_freq(100)
             
         self.speed = ZERO_SPEED
         self.steer = ZERO_STEER
@@ -56,15 +58,16 @@ class HarCar:
         print("current, set speed:", self.speed, pwm_val)
         while self.adjust_speed_thread_running:
             self.request_speed_thread_interrupt = True
-        Thread(target=self.adjust_speed_thread, args=(pwm_val, step, rate,)).start()
         self.request_speed_thread_interrupt = False
+        Thread(target=self.adjust_speed_thread, args=(pwm_val, step, rate,)).start()
     
     def adjust_speed_thread(self, target, step, rate):
         self.adjust_speed_thread_running = True
         for i in range(self.speed, target, step):
             self.speed = i
             print("speed:", i)
-            self.pwm.set_pwm(0,0,self.speed)
+            # NOTE: PWM disable
+            #self.pwm.set_pwm(0,0,self.speed)
             if i > MIN_REVERSE and i < MIN_FORWARD:
                 # blow right on through the deadband - NO SLEEPING IN THE DEADBAND!!
                 continue
@@ -87,32 +90,37 @@ class HarCar:
         print("current, set steer:", self.steer, pwm_val)
         while self.adjust_steer_thread_running:
             self.request_steer_thread_interrupt = True
-        Thread(target=self.adjust_steer_thread, args=(pwm_val, step, rate,)).start()
         self.request_steer_thread_interrupt = False
+        Thread(target=self.adjust_steer_thread, args=(pwm_val, step, rate,)).start()
 
     def adjust_steer_thread(self, target, step, rate):
         self.adjust_steer_thread_running = True   
         for i in range(self.steer, target, step):
             self.steer = i
             print("steer:", i)
-            self.pwm.set_pwm(1,0,self.steer)
+            # NOTE: PWM disable
+            #self.pwm.set_pwm(1,0,self.steer)
+            time.sleep(1. / rate)
             if self.request_steer_thread_interrupt:
                 print("interrupting steer adjust")
                 break
-            time.sleep(1. / rate)
         self.adjust_steer_thread_running = False
 
 if __name__ == '__main__':
     car = HarCar()
-    car.set_speed(.09, 5)
-    time.sleep(3)
-    car.set_speed(-.09, 5)
-    time.sleep(3)
-    car.set_steer(.09, 5)
-    time.sleep(3)
-    car.set_steer(-.09, 5)
-    time.sleep(3)
+    car.set_speed(.05)
 
+    time.sleep(2)
+
+    setting = -1.0
+    for i in range(10):
+        setting *= -1.0
+        car.set_steer(setting)
+        time.sleep(0.2)
+
+    time.sleep(1)
+    car.set_speed(-.05)
+    
     # shut it down
     car.set_steer()
     car.set_speed()

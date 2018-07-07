@@ -1,5 +1,6 @@
 import csv
-from HarCar import HarCar
+#from HarCar import HarCar
+from HarCarThreaded import HarCar
 import serial
 import threading
 import time
@@ -15,6 +16,8 @@ with open('Figure8_spaced30.csv') as csvfile:
     readCSV = csv.reader(csvfile, delimiter=',')
     for row in readCSV:
         waypoints.append([float(row[0]), float(row[1])])
+#with open('./logs/'+time.strftime("%Y-%m-%d-%H-%M")+'_LOG') as logfile:
+
 
 car = HarCar()
 
@@ -54,10 +57,18 @@ location_read_thread = myThread()
 location_read_thread.start()
 
 car.set_speed(0.15)
+time.sleep(3)
 iteration = 0
 try:
     while currentWaypointIndex < len(waypoints):
         waypointX, waypointY = (waypoints[currentWaypointIndex][1], waypoints[currentWaypointIndex][0])
+        if curXPos is None or curYPos is None or heading is None or \
+        (curXPos == prevXPos and curYPos == prevYPos):  # THIS IS NOT CORRECT!!!!
+            continue
+        if iteration % 5 != 0:
+            iteration += 1
+            continue
+        print(".", end="")
         distToCurrentWaypoint = dist(curXPos, curYPos, waypointX, waypointY)
         if distToCurrentWaypoint < 0.00003:
             print("*****************Waypoint ", currentWaypointIndex," reached!********************")
@@ -74,7 +85,8 @@ try:
         steerValue = headingDiff/(pi/4)
         car.set_steer(steerValue)
         if iteration % 10 == 0:
-            print("Distance to waypoint: ", distToCurrentWaypoint)
+            #print(chr(27) + "[2J")
+            print("Distance to waypoint ", currentWaypointIndex, ": ", distToCurrentWaypoint)
             print("heading difference: ", headingDiff)
             print("steerValue: ", steerValue)
         iteration += 1
