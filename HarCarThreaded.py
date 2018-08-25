@@ -108,19 +108,10 @@ class HarCar:
 
 if __name__ == '__main__':
     car = HarCar()
-    car.set_speed(.25)
 
-    time.sleep(2)
+    car.set_speed(.4)
+    time.sleep(7)
 
-    setting = -1.0
-    for i in range(10):
-        setting *= -1.0
-        car.set_steer(setting)
-        time.sleep(0.2)
-
-    time.sleep(1)
-    car.set_speed(-.25)
-    
     # shut it down
     car.set_steer()
     car.set_speed()

@@ -1,6 +1,6 @@
 import time
 # NOTE: PWM
-#import Adafruit_PCA9685
+import Adafruit_PCA9685
 
 # Configure PWM constants. For PCA9685 pulses are 0 to 4096
 # PWM min (10%) = 410, max (20%) = 820, nominal (15%) = 615
@@ -23,8 +23,8 @@ class HarCar:
         
         # Initialise the PCA9685 using the default address (0x40).
         # NOTE: PWM
-        #self.pwm = Adafruit_PCA9685.PCA9685()
-        #self.pwm.set_pwm_freq(100)
+        self.pwm = Adafruit_PCA9685.PCA9685()
+        self.pwm.set_pwm_freq(100)
             
         self.speed = ZERO_SPEED
         self.steer = ZERO_STEER
@@ -53,7 +53,7 @@ class HarCar:
             self.speed = i
             print("speed:", i)
             # NOTE: PWM
-            #self.pwm.set_pwm(0,0,self.speed)
+            self.pwm.set_pwm(0,0,self.speed)
             if i > MIN_REVERSE and i < MIN_FORWARD:
                 # blow right on through the deadband - NO SLEEPING IN THE DEADBAND!!
                 continue
@@ -74,24 +74,24 @@ class HarCar:
             self.steer = i
             print("steer:", i)
             # NOTE: PWM
-            #self.pwm.set_pwm(1,0,self.steer)
+            self.pwm.set_pwm(1,0,self.steer)
             time.sleep(1. / rate)
 
 if __name__ == '__main__':
     car = HarCar()
-    car.set_speed(.05)
+    car.set_speed(.25)
 
-    time.sleep(2)
+    time.sleep(1)
 
     setting = -1.0
-    for i in range(10):
+    for i in range(2):
         setting *= -1.0
-        car.set_steer(setting)
+        car.set_steer(setting, 2000)
         time.sleep(0.2)
 
     time.sleep(1)
-    car.set_speed(-.05)
-    
+    car.set_speed(-.25)
+    time.sleep(1)
     # shut it down
     car.set_steer()
     car.set_speed()
