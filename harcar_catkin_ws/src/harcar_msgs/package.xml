@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format2.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package>
+
+  <name>harcar_msgs</name>
+  <version>0.0.1</version>
+  <description>
+    Messages needed for the HarCar project
+  </description>
+  <maintainer email="devin.gingerich@harman.com">Devin Gingerich</maintainer>
+  <author>Devin Gingerich</author>
+  <license>BSD</license>
+  <url>http://harman.com</url>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>message_generation</build_depend>
+
+  <build_depend>std_msgs</build_depend>
+  <build_depend>geometry_msgs</build_depend>
+  <build_depend>rospy</build_depend>
+
+  <run_depend>message_generation</run_depend>
+
+  <run_depend>std_msgs</run_depend>
+  <run_depend>geometry_msgs</run_depend>
+  <run_depend>rospy</run_depend>
+  
+  <export>
+    <architecture_independent/>
+  </export>
+
+</package>

@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<package>
+  <name>load_path_node</name>
+  <version>0.0.1</version>
+  <description>
+	Loads a CSV file of Lat/Lon GPS coordinates.
+  </description>
+
+  <!-- One maintainer tag required, multiple allowed, one person per tag --> 
+  <maintainer email="devin.gingerich@harman.com">Devin Gingerich</maintainer>
+
+  <!-- One license tag required, multiple allowed, one license per tag -->
+  <license>BSD</license>
+
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>roslint</build_depend>
+  <build_depend>harcar_msgs</build_depend>
+  <run_depend>rospy</run_depend>
+
+  <!-- The export tag contains other, unspecified, tags -->
+  <!-- This is a pure Python package, so mark it architecture independent -->
+  <export><architecture_independent/></export>
+
+  
+</package>
