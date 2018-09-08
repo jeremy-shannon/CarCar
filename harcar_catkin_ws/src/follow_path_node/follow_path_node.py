@@ -49,7 +49,7 @@ class follow_path_node:
             # not enough info yet - need two rtk readings
             return
         
-        if currentWaypointIndex = len(waypoints):
+        if currentWaypointIndex == len(waypoints):
             # reached final waypoint - stop
             control_msg.steer_angle = 0
             control_msg.speed = 0

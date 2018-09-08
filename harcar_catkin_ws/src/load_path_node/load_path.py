@@ -9,7 +9,7 @@ def load_points():
 	rospy.init_node('load_path', anonymous=True)
 	rate = rospy.Rate(0.2) #Hz. Once every 5 seconds.
 	waypoints = []
-	with open('Figure8_spaced30.csv') as csvfile:
+	with open('/home/ubuntu/harcar_catkin_ws/src/load_path_node/Figure8_spaced30.csv') as csvfile:
 		readCSV = csv.reader(csvfile, delimiter=',')
 		for row in readCSV:
 			waypoint = Pose()

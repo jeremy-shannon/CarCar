@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+<launch>
+    <node pkg="load_path_node" type="load_path.py" name="load_path_node">
+    </node>
+</launch>
