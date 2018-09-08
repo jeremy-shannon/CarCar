@@ -1,6 +1,5 @@
 import csv
-#from HarCar import HarCar
-from HarCarThreaded import HarCar
+from HarCar import HarCar
 import serial
 import threading
 import time
