@@ -5,7 +5,7 @@ from harcar_msgs.msg import Path
 from geometry_msgs.msg import Pose
 
 def load_points():
-	pub = rospy.Publisher('waypoint_path', Path, queue_size=10)
+	pub = rospy.Publisher('waypoint_path', Path, queue_size=1)
 	rospy.init_node('load_path', anonymous=True)
 	rate = rospy.Rate(0.2) #Hz. Once every 5 seconds.
 	waypoints = []

@@ -17,21 +17,21 @@ class follow_path_node:
 
         rospy.Subscriber("/waypoint_path", Path, self.waypoints_cb)
         rospy.Subscriber("/tcpfix", NavSatFix, self.rtk_cb)
-        self.car_control_pub = rospy.Publisher("/car_control", CarControl)
+        self.car_control_pub = rospy.Publisher("/car_control", CarControl, queue_size=1)
 
         self.waypoints = None
         self.curXPos, self.curYPos, self.prevXPos, self.prevYPos = (None, None, None, None)
         self.heading, self.speed = (None, None)
-        self.current_waypoint_index = 0 
+        self.currentWaypointIndex = 0 
 
         rospy.spin()
         
     def waypoints_cb(self, data):
-        rospy.loginfo(rospy.get_caller_id() + "I heard %s", data.data)
-        self.waypoints = data
+        rospy.loginfo(rospy.get_caller_id() + "I heard %s", data)
+        self.waypoints = data.path
 
     def rtk_cb(self, data):
-        rospy.loginfo(rospy.get_caller_id() + "I heard %s", data.data)
+        rospy.loginfo(rospy.get_caller_id() + "I heard %s", data)
         control_msg = CarControl()
 
         self.prevXPos = self.curXPos
@@ -42,31 +42,31 @@ class follow_path_node:
         if self.waypoints is None:
             return
 
-        if (curXPos and curYPos and prevXPos and prevYPos):
-            xDiff, yDiff = (curXPos - prevXPos, curYPos - prevYPos)
-            heading = atan2(yDiff, xDiff)
+        if (self.curXPos and self.curYPos and self.prevXPos and self.prevYPos):
+            xDiff, yDiff = (self.curXPos - self.prevXPos, self.curYPos - self.prevYPos)
+            self.heading = atan2(yDiff, xDiff)
         else:
             # not enough info yet - need two rtk readings
             return
         
-        if currentWaypointIndex == len(waypoints):
+        if self.currentWaypointIndex == len(self.waypoints):
             # reached final waypoint - stop
             control_msg.steer_angle = 0
             control_msg.speed = 0
             self.car_control_pub.publish(control_msg)
             return
 
-        waypointX = waypoints[currentWaypointIndex].position.x
-        waypointY = waypoints[currentWaypointIndex].position.y
-        distToCurrentWaypoint = dist(curXPos, curYPos, waypointX, waypointY)
+        waypointX = self.waypoints[self.currentWaypointIndex].position.x
+        waypointY = self.waypoints[self.currentWaypointIndex].position.y
+        distToCurrentWaypoint = dist(self.curXPos, self.curYPos, waypointX, waypointY)
         if distToCurrentWaypoint < 0.000038:
-            rospy.loginfo("*****************Waypoint ", currentWaypointIndex," reached!********************")
-            currentWaypointIndex += 1
+            #rospy.loginfo("*****************Waypoint ", self.currentWaypointIndex," reached!********************")
+            self.currentWaypointIndex += 1
             return
 
-        xDiffToWaypoint, yDiffToWaypoint = (waypointX - curXPos, waypointY - curYPos)
+        xDiffToWaypoint, yDiffToWaypoint = (waypointX - self.curXPos, waypointY - self.curYPos)
         headingToWaypoint = atan2(yDiffToWaypoint, xDiffToWaypoint)
-        headingDiff = heading - headingToWaypoint
+        headingDiff = self.heading - headingToWaypoint
         if headingDiff < -pi:
             headingDiff += 2*pi
         if headingDiff > pi:

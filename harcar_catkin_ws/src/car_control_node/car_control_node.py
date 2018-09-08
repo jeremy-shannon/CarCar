@@ -16,7 +16,7 @@ class car_control_node:
         rospy.spin()
 
     def control_cb(self, data):
-        rospy.loginfo(rospy.get_caller_id() + "I heard %s", data.data)
+        rospy.loginfo(rospy.get_caller_id() + "I heard %s", data)
 
         self.car.set_steer(data.steer_angle)#TODO Correct steer_angle
         self.car.set_speed(data.speed)#TODO Correct Speed
