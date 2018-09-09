@@ -18,6 +18,9 @@ MAX_FORWARD = 820
 MAX_ACCEL = 38   #PWM steps per second
 MAX_STEER_RATE = 2000 
 
+SPEED_LIMIT = 2.0  # m/s
+STEER_LIMIT = 0.35 # radians
+
 class HarCar:
 
     def __init__(self):             
@@ -40,11 +43,11 @@ class HarCar:
         self.set_steer()
 
     def set_speed(self, speed_val=0.0, rate=MAX_ACCEL):
-        # speed_val should be in range [-1,1], -1 = full reverse, 1 = full forward
-        if speed_val > 1.0:
-            speed_val = 1.0
-        elif speed_val < -1.0:
-            speed_val = -1.0
+        # limit speed
+        if speed_val > SPEED_LIMIT:
+            speed_val = SPEED_LIMIT
+        elif speed_val < -SPEED_LIMIT:
+            speed_val = -SPEED_LIMIT
         pwm_val = ZERO_SPEED
         if speed_val < 0:
             #pwm_val = int(MIN_REVERSE + float(speed_val) * float(MIN_REVERSE - MAX_REVERSE))
@@ -82,10 +85,10 @@ class HarCar:
 
     def set_steer(self, steer_val=0.0, rate=MAX_STEER_RATE):
         # steer_val should be in range [-1,1], -1 = full left, 1 = full right
-        if steer_val > 1.0:
-            steer_val = 1.0
-        elif steer_val < -1.0:
-            steer_val = -1.0
+        if steer_val > STEER_LIMIT:
+            steer_val = STEER_LIMIT
+        elif steer_val < -STEER_LIMIT:
+            steer_val = -STEER_LIMIT
         #pwm_val = int(ZERO_STEER + float(steer_val) * float(MAX_RIGHT - ZERO_STEER))
         #Magic formula to convert streeing angle(radians) to corresponding pwm value
         pwm_val = int((411.96 * steer_val) + 652.51)

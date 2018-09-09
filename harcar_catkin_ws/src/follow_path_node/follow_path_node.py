@@ -79,7 +79,7 @@ class follow_path_node:
         waypointX = self.waypoints[self.currentWaypointIndex].pose.position.x
         waypointY = self.waypoints[self.currentWaypointIndex].pose.position.y
         distToCurrentWaypoint = dist(self.curXPos, self.curYPos, waypointX, waypointY)
-        if distToCurrentWaypoint < 0.000038:
+        if distToCurrentWaypoint < 1.50:
             #rospy.loginfo("*****************Waypoint ", self.currentWaypointIndex," reached!********************")
             self.currentWaypointIndex += 1
             return
@@ -91,7 +91,7 @@ class follow_path_node:
             headingDiff += 2*pi
         if headingDiff > pi:
             headingDiff -= 2*pi
-        steerValue = headingDiff/(pi/1.25)
+        steerValue = headingDiff / pi
         control_msg.steer_angle = steerValue
         control_msg.speed = CONSTANT_SPEED
         self.car_control_pub.publish(control_msg)
