@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<launch>
+    <!--load waypoints Node -->
+    <include file="$(find load_path_node)/launch/load_path_node.launch"/>
+
+    <!--load RTK Node -->
+    <include file="$(find reach_ros_node)/launch/reach_ros_node.launch"/>
+
+    <!--follow path Node -->
+    <include file="$(find follow_path_node)/launch/follow_path_node.launch"/>
+
+    <!--car control Node -->
+    <include file="$(find car_control_node)/launch/car_control_node.launch"/>
+</launch>
