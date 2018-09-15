@@ -91,7 +91,7 @@ class HarCar:
             steer_val = -STEER_LIMIT
         #pwm_val = int(ZERO_STEER + float(steer_val) * float(MAX_RIGHT - ZERO_STEER))
         #Magic formula to convert streeing angle(radians) to corresponding pwm value
-        pwm_val = int((411.96 * steer_val) + 652.51)
+        pwm_val = int((-411.96 * steer_val) + 652.51)
         step = 1
         if self.steer > pwm_val:
             step = -1
