@@ -3,13 +3,14 @@ import rospy
 from harcar_msgs.msg import CarControl
 #from harcar_msgs.msg import Path
 from nav_msgs.msg import Path
-from sensor_msgs.msg import NavSatFix
+from sensor_msgs.msg import NavSatFix, Imu
 from geometry_msgs.msg import PoseStamped
 from math import atan2, sqrt, pi, cos
 from tf.msg import tfMessage
-from tf.transformations import quaternion_from_euler
+from tf.transformations import quaternion_from_euler, euler_from_quaternion
 
 CONSTANT_SPEED = 1.0    # m/s
+STEER_DAMPENING = 2.0   # unitless... ¯\_(ツ)_/¯
 
 def dist(x1, y1, x2, y2):
     return sqrt(pow(x2 - x1, 2) + pow(y2 - y1, 2))
@@ -20,9 +21,11 @@ class follow_path_node:
 
         rospy.Subscriber("/waypoint_navmsg_path", Path, self.waypoints_cb)
         rospy.Subscriber("/tcpfix", NavSatFix, self.rtk_cb)
+        rospy.Subscriber("/imu", Imu, self.imu_cb)
         self.car_control_pub = rospy.Publisher("/car_control", CarControl, queue_size=1)
         self.rtk_pose = rospy.Publisher("/rtk_pose", PoseStamped, queue_size=1)
         self.car_control_vis_pub = rospy.Publisher("/car_control_vis", PoseStamped, queue_size=1)
+        self.imu_pose_pub = rospy.Publisher("/imu_pose", PoseStamped, queue_size=1)
 
         self.waypoints = None
         self.curXPos, self.curYPos, self.prevXPos, self.prevYPos = (None, None, None, None)
@@ -39,6 +42,27 @@ class follow_path_node:
         #rospy.loginfo(rospy.get_caller_id() + "I heard %s", data)
         self.waypoints = data.poses
 
+    def imu_cb(self, data):
+        xPos, yPos = (0,0)
+        if self.curXPos is not None:
+            xPos = self.curXPos
+        if self.curYPos is not None:
+            yPos = self.curYPos
+        imuMsg = PoseStamped()
+        imuMsg.header.stamp = rospy.get_rostime()
+        imuMsg.header.frame_id = "/world"
+        imuMsg.pose.position.x = xPos
+        imuMsg.pose.position.y = yPos
+        imuMsg.pose.orientation.x = data.orientation.x
+        imuMsg.pose.orientation.y = data.orientation.y
+        imuMsg.pose.orientation.z = data.orientation.z
+        imuMsg.pose.orientation.w = data.orientation.w
+        self.imu_pose_pub.publish(imuMsg)
+        _,_,self.heading = euler_from_quaternion(imuMsg.pose.orientation.x,
+                                                 imuMsg.pose.orientation.y,
+                                                 imuMsg.pose.orientation.z,
+                                                 imuMsg.pose.orientation.w)
+
     def rtk_cb(self, data):
         #rospy.loginfo(rospy.get_caller_id() + "I heard %s", data)
         control_msg = CarControl()
@@ -54,8 +78,8 @@ class follow_path_node:
 
         if (self.curXPos and self.curYPos and self.prevXPos and self.prevYPos):
             xDiff, yDiff = (self.curXPos - self.prevXPos, self.curYPos - self.prevYPos)
-            self.heading = atan2(yDiff, xDiff)
-            quat = quaternion_from_euler(0, 0, self.heading)
+            RTKHeading = atan2(yDiff, xDiff)
+            quat = quaternion_from_euler(0, 0, RTKHeading)
             # publish PoseStamped message
             poseMsg = PoseStamped()
             poseMsg.header.stamp = rospy.get_rostime()
@@ -103,7 +127,7 @@ class follow_path_node:
             headingDiff += 2*pi
         if headingDiff > pi:
             headingDiff -= 2*pi
-        steerValue = headingDiff / pi    ######### FINE TUNE STEERING DAMPENING HERE ##############
+        steerValue = headingDiff / STEER_DAMPENING * pi    ######### FINE TUNE STEERING DAMPENING HERE ##############
         control_msg.steer_angle = steerValue
         control_msg.speed = CONSTANT_SPEED
         rospy.loginfo("Steer: " + str(steerValue))
