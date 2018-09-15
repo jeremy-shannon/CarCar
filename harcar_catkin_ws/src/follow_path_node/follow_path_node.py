@@ -22,6 +22,7 @@ class follow_path_node:
         rospy.Subscriber("/tcpfix", NavSatFix, self.rtk_cb)
         self.car_control_pub = rospy.Publisher("/car_control", CarControl, queue_size=1)
         self.rtk_pose = rospy.Publisher("/rtk_pose", PoseStamped, queue_size=1)
+        self.car_control_vis_pub = rospy.Publisher("/car_control_vis", PoseStamped, queue_size=1)
 
         self.waypoints = None
         self.curXPos, self.curYPos, self.prevXPos, self.prevYPos = (None, None, None, None)
@@ -35,12 +36,13 @@ class follow_path_node:
         rospy.spin()
         
     def waypoints_cb(self, data):
-        rospy.loginfo(rospy.get_caller_id() + "I heard %s", data)
+        #rospy.loginfo(rospy.get_caller_id() + "I heard %s", data)
         self.waypoints = data.poses
 
     def rtk_cb(self, data):
-        rospy.loginfo(rospy.get_caller_id() + "I heard %s", data)
+        #rospy.loginfo(rospy.get_caller_id() + "I heard %s", data)
         control_msg = CarControl()
+        control_vis_msg = PoseStamped()
 
         self.prevXPos = self.curXPos
         self.prevYPos = self.curYPos
@@ -64,6 +66,7 @@ class follow_path_node:
             poseMsg.pose.orientation.y = quat[1]
             poseMsg.pose.orientation.z = quat[2]
             poseMsg.pose.orientation.w = quat[3]
+            control_vis_msg = poseMsg  # copy over, we'll change the orientation later
             self.rtk_pose.publish(poseMsg)
         else:
             # not enough info yet - need two rtk readings
@@ -86,14 +89,24 @@ class follow_path_node:
 
         xDiffToWaypoint, yDiffToWaypoint = (waypointX - self.curXPos, waypointY - self.curYPos)
         headingToWaypoint = atan2(yDiffToWaypoint, xDiffToWaypoint)
+
+        # headingToWaypoint determines the car control message
+        quat = quaternion_from_euler(0, 0, headingToWaypoint)
+        control_vis_msg.pose.orientation.x = quat[0]
+        control_vis_msg.pose.orientation.y = quat[1]
+        control_vis_msg.pose.orientation.z = quat[2]
+        control_vis_msg.pose.orientation.w = quat[3]
+        self.car_control_vis_pub.publish(control_vis_msg)
+
         headingDiff = self.heading - headingToWaypoint
         if headingDiff < -pi:
             headingDiff += 2*pi
         if headingDiff > pi:
             headingDiff -= 2*pi
-        steerValue = headingDiff / pi
+        steerValue = headingDiff / pi    ######### FINE TUNE STEERING DAMPENING HERE ##############
         control_msg.steer_angle = steerValue
         control_msg.speed = CONSTANT_SPEED
+        rospy.loginfo("Steer: " + str(steerValue))
         self.car_control_pub.publish(control_msg)
 
 if __name__ == '__main__':
