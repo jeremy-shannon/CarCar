@@ -9,6 +9,7 @@ This code is for the HarCar RC car prototype platform built on the Traxxas Fiest
 - Raspberry Pi
 - Adafruit PCA9685 PWM driver module
 - Reach RTK precision GPS unit
+- Adafruit/Bosch BNO055 IMU
 
 Future hardware will include:
 - Nvidia Jetson
