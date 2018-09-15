@@ -10,7 +10,7 @@ from tf.msg import tfMessage
 from tf.transformations import quaternion_from_euler, euler_from_quaternion
 
 CONSTANT_SPEED = 1.0    # m/s
-STEER_DAMPENING = 2.0   # unitless... ¯\_(ツ)_/¯
+STEER_DAMPENING = 2.0   # unitless... 
 
 def dist(x1, y1, x2, y2):
     return sqrt(pow(x2 - x1, 2) + pow(y2 - y1, 2))
@@ -18,14 +18,6 @@ def dist(x1, y1, x2, y2):
 class follow_path_node:
     def __init__(self):
         rospy.init_node('follow_path_node', anonymous=True)
-
-        rospy.Subscriber("/waypoint_navmsg_path", Path, self.waypoints_cb)
-        rospy.Subscriber("/tcpfix", NavSatFix, self.rtk_cb)
-        rospy.Subscriber("/imu", Imu, self.imu_cb)
-        self.car_control_pub = rospy.Publisher("/car_control", CarControl, queue_size=1)
-        self.rtk_pose = rospy.Publisher("/rtk_pose", PoseStamped, queue_size=1)
-        self.car_control_vis_pub = rospy.Publisher("/car_control_vis", PoseStamped, queue_size=1)
-        self.imu_pose_pub = rospy.Publisher("/imu_pose", PoseStamped, queue_size=1)
 
         self.waypoints = None
         self.curXPos, self.curYPos, self.prevXPos, self.prevYPos = (None, None, None, None)
@@ -35,6 +27,15 @@ class follow_path_node:
         self.lat0, self.lon0 = (42.51300695,-83.44528012)  # IF YOU EVER GO OUTSIDE THE HARMAN CABOT NORTH VICINITY, CHANGE THIS!!!!
         self.m_per_lat = (111132.954 - 559.822 * cos(2 * self.lat0) + 1.175 * cos(4 * self.lat0))
         self.m_per_lon = (311132.954 * cos(self.lon0))
+
+        self.car_control_pub = rospy.Publisher("/car_control", CarControl, queue_size=1)
+        self.rtk_pose = rospy.Publisher("/rtk_pose", PoseStamped, queue_size=1)
+        self.car_control_vis_pub = rospy.Publisher("/car_control_vis", PoseStamped, queue_size=1)
+        self.imu_pose_pub = rospy.Publisher("/imu_pose", PoseStamped, queue_size=1)
+        
+        rospy.Subscriber("/waypoint_navmsg_path", Path, self.waypoints_cb)
+        rospy.Subscriber("/tcpfix", NavSatFix, self.rtk_cb)
+        rospy.Subscriber("/imu", Imu, self.imu_cb)
 
         rospy.spin()
         
@@ -58,10 +59,10 @@ class follow_path_node:
         imuMsg.pose.orientation.z = data.orientation.z
         imuMsg.pose.orientation.w = data.orientation.w
         self.imu_pose_pub.publish(imuMsg)
-        _,_,self.heading = euler_from_quaternion(imuMsg.pose.orientation.x,
-                                                 imuMsg.pose.orientation.y,
-                                                 imuMsg.pose.orientation.z,
-                                                 imuMsg.pose.orientation.w)
+        _,_,self.heading = euler_from_quaternion((imuMsg.pose.orientation.x,
+                                                  imuMsg.pose.orientation.y,
+                                                  imuMsg.pose.orientation.z,
+                                                  imuMsg.pose.orientation.w))
 
     def rtk_cb(self, data):
         #rospy.loginfo(rospy.get_caller_id() + "I heard %s", data)
@@ -127,7 +128,7 @@ class follow_path_node:
             headingDiff += 2*pi
         if headingDiff > pi:
             headingDiff -= 2*pi
-        steerValue = headingDiff / STEER_DAMPENING * pi    ######### FINE TUNE STEERING DAMPENING HERE ##############
+        steerValue = headingDiff / (STEER_DAMPENING * pi)    ######### FINE TUNE STEERING DAMPENING HERE ##############
         control_msg.steer_angle = steerValue
         control_msg.speed = CONSTANT_SPEED
         rospy.loginfo("Steer: " + str(steerValue))
