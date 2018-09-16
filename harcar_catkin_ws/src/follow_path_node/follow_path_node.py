@@ -21,7 +21,7 @@ class follow_path_node:
 
         self.waypoints = None
         self.curXPos, self.curYPos, self.prevXPos, self.prevYPos = (None, None, None, None)
-        self.heading, self.speed = (None, None)
+        self.heading, self.speed, self.steer_angle = (None, None, None)
         self.currentWaypointIndex = 0 
 
         self.lat0, self.lon0 = (42.51300695,-83.44528012)  # IF YOU EVER GO OUTSIDE THE HARMAN CABOT NORTH VICINITY, CHANGE THIS!!!!
@@ -46,6 +46,8 @@ class follow_path_node:
         self.waypoints = data.poses
 
     def car_state_cb(self, data):
+        self.steer_angle = data.steer_angle
+        self.speed = data.speed
         # publish an Odometry message for Rviz representing the current car speed/steer
         if self.curXPos is not None and self.curYPos is not None and self.heading is not None:
             car_state_msg = Odometry()
@@ -53,12 +55,12 @@ class follow_path_node:
             car_state_msg.header.frame_id = "/world"
             car_state_msg.pose.pose.position.x = self.curXPos
             car_state_msg.pose.pose.position.y = self.curYPos
-            quat = quaternion_from_euler(0, 0, self.heading + data.steer_angle)
+            quat = quaternion_from_euler(0, 0, self.heading + self.steer_angle)
             car_state_msg.pose.pose.orientation.x = quat[0]
             car_state_msg.pose.pose.orientation.y = quat[1]
             car_state_msg.pose.pose.orientation.z = quat[2]
             car_state_msg.pose.pose.orientation.w = quat[3]
-            car_state_msg.twist.twist.linear.x = data.speed
+            car_state_msg.twist.twist.linear.x = self.speed
             self.car_state_pub.publish(car_state_msg)
 
 
