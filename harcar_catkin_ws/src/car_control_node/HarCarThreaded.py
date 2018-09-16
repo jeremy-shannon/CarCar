@@ -41,6 +41,14 @@ class HarCar:
 
         self.set_speed()
         self.set_steer()
+    
+    def get_speed_and_steer(self):
+        # invert these following equations, to return current speed/steer in m/s and radians, respectively
+        #pwm_val = int((26.472 * speed_val) + 680.45)
+        #pwm_val = int((-411.96 * steer_val) + 652.51)
+        current_speed = (float(self.speed) - 680.45) / 26.472  
+        current_steer = (float(self.steer) - 652.51) / -411.96
+        return (current_speed, current_steer)
 
     def set_speed(self, speed_val=0.0, rate=MAX_ACCEL):
         # limit speed
