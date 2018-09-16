@@ -11,13 +11,21 @@ class car_control_node:
         #pwm and uses pwm library to input that info to pwm
         self.car = HarCar()
 
+        state_pub = rospy.Publisher("/car_state", CarControl, queue_size=1)
         rospy.Subscriber("/car_control", CarControl, self.control_cb)#TODO Correct topic and message
+        
+        rate = rospy.Rate(10) # Hz. 
 
-        rospy.spin()
+        while not rospy.is_shutdown():
+            # do whatever you want here
+            current_speed, current_steer = self.car.get_speed_and_steer()
+            state_msg = CarControl()
+            state_msg.speed = current_speed, current_steer
+            state_pub.publish(state_msg)
+            rate.sleep()
 
     def control_cb(self, data):
-        rospy.loginfo(rospy.get_caller_id() + "I heard %s", data)
-
+        #rospy.loginfo(rospy.get_caller_id() + "I heard %s", data)
         self.car.set_steer(data.steer_angle)#TODO Correct steer_angle
         self.car.set_speed(data.speed)#TODO Correct Speed
 

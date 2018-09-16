@@ -2,7 +2,7 @@
 import rospy
 from harcar_msgs.msg import CarControl
 #from harcar_msgs.msg import Path
-from nav_msgs.msg import Path
+from nav_msgs.msg import Path, Odometry
 from sensor_msgs.msg import NavSatFix, Imu
 from geometry_msgs.msg import PoseStamped
 from math import atan2, sqrt, pi, cos
@@ -10,7 +10,7 @@ from tf.msg import tfMessage
 from tf.transformations import quaternion_from_euler, euler_from_quaternion
 
 CONSTANT_SPEED = 1.0    # m/s
-STEER_DAMPENING = 2.0   # unitless... 
+STEER_DAMPENING = 1.25   # unitless... 
 
 def dist(x1, y1, x2, y2):
     return sqrt(pow(x2 - x1, 2) + pow(y2 - y1, 2))
@@ -32,16 +32,35 @@ class follow_path_node:
         self.rtk_pose = rospy.Publisher("/rtk_pose", PoseStamped, queue_size=1)
         self.car_control_vis_pub = rospy.Publisher("/car_control_vis", PoseStamped, queue_size=1)
         self.imu_pose_pub = rospy.Publisher("/imu_pose", PoseStamped, queue_size=1)
-        
+        self.car_state_pub = rospy.Publisher("/car_state_rviz", Odometry, queue_size=1)
+
         rospy.Subscriber("/waypoint_navmsg_path", Path, self.waypoints_cb)
         rospy.Subscriber("/tcpfix", NavSatFix, self.rtk_cb)
         rospy.Subscriber("/imu", Imu, self.imu_cb)
+        rospy.Subscriber("/car_state", CarControl, self.car_state_cb)
 
         rospy.spin()
         
     def waypoints_cb(self, data):
         #rospy.loginfo(rospy.get_caller_id() + "I heard %s", data)
         self.waypoints = data.poses
+
+    def car_state_cb(self, data):
+        # publish an Odometry message for Rviz representing the current car speed/steer
+        if self.curXPos is not None and self.curYPos is not None and self.heading is not None:
+            car_state_msg = Odometry()
+            car_state_msg.header.stamp = rospy.get_rostime()
+            car_state_msg.header.frame_id = "/world"
+            car_state_msg.pose.pose.position.x = self.curXPos
+            car_state_msg.pose.pose.position.y = self.curYPos
+            quat = quaternion_from_euler(0, 0, self.heading + data.steer_angle)
+            car_state_msg.pose.pose.orientation.x = quat[0]
+            car_state_msg.pose.pose.orientation.y = quat[1]
+            car_state_msg.pose.pose.orientation.z = quat[2]
+            car_state_msg.pose.pose.orientation.w = quat[3]
+            car_state_msg.twist.twist.linear.x = data.speed
+            self.car_state_pub.publish(car_state_msg)
+
 
     def imu_cb(self, data):
         xPos, yPos = (0,0)
