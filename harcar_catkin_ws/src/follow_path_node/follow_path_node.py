@@ -1,16 +1,19 @@
 #!/usr/bin/env python
 import rospy
+import tf
 from harcar_msgs.msg import CarControl
 #from harcar_msgs.msg import Path
 from nav_msgs.msg import Path, Odometry
 from sensor_msgs.msg import NavSatFix, Imu
 from geometry_msgs.msg import PoseStamped
-from math import atan2, sqrt, pi, cos
+from math import atan2, sqrt, pi, cos, sin, tan
 from tf.msg import tfMessage
 from tf.transformations import quaternion_from_euler, euler_from_quaternion
 
-CONSTANT_SPEED = 1.0    # m/s
-STEER_DAMPENING = 1.25   # unitless... 
+CONSTANT_SPEED = 1.25    # m/s
+STEER_DAMPENING = 1.5   # unitless... 
+WHEEL_BASE = 0.325      # meters
+TURN_RATE_TOLERANCE = 0.001     # radians - tolerance for approximating straight-line motion
 
 def dist(x1, y1, x2, y2):
     return sqrt(pow(x2 - x1, 2) + pow(y2 - y1, 2))
@@ -33,6 +36,9 @@ class follow_path_node:
         self.car_control_vis_pub = rospy.Publisher("/car_control_vis", PoseStamped, queue_size=1)
         self.imu_pose_pub = rospy.Publisher("/imu_pose", PoseStamped, queue_size=1)
         self.car_state_pub = rospy.Publisher("/car_state_rviz", Odometry, queue_size=1)
+        self.projected_path_pub = rospy.Publisher("/projected_path", Path, queue_size=1)
+       
+        self.car_pose_tf_br = tf.TransformBroadcaster()
 
         rospy.Subscriber("/waypoint_navmsg_path", Path, self.waypoints_cb)
         rospy.Subscriber("/tcpfix", NavSatFix, self.rtk_cb)
@@ -48,14 +54,17 @@ class follow_path_node:
     def car_state_cb(self, data):
         self.steer_angle = data.steer_angle
         self.speed = data.speed
+        rospy.loginfo("Steer: " + str(self.steer_angle) + ", speed: " + str(self.speed))
+
         # publish an Odometry message for Rviz representing the current car speed/steer
         if self.curXPos is not None and self.curYPos is not None and self.heading is not None:
             car_state_msg = Odometry()
             car_state_msg.header.stamp = rospy.get_rostime()
-            car_state_msg.header.frame_id = "/world"
-            car_state_msg.pose.pose.position.x = self.curXPos
-            car_state_msg.pose.pose.position.y = self.curYPos
-            quat = quaternion_from_euler(0, 0, self.heading + self.steer_angle)
+            car_state_msg.header.frame_id = "/car_rtk"
+            #car_state_msg.header.frame_id = "/world"
+            #car_state_msg.pose.pose.position.x = self.curXPos
+            #car_state_msg.pose.pose.position.y = self.curYPos
+            quat = quaternion_from_euler(0, 0, self.steer_angle)
             car_state_msg.pose.pose.orientation.x = quat[0]
             car_state_msg.pose.pose.orientation.y = quat[1]
             car_state_msg.pose.pose.orientation.z = quat[2]
@@ -63,6 +72,31 @@ class follow_path_node:
             car_state_msg.twist.twist.linear.x = self.speed
             self.car_state_pub.publish(car_state_msg)
 
+            # also publish a predicted path message
+            predicted_path_msg = Path()
+            predicted_path_msg.header.stamp = rospy.get_rostime()
+            predicted_path_msg.header.frame_id = "/car_rtk"
+            for t in range(0, 10):
+                path_point = PoseStamped()
+                path_point.header.stamp = rospy.get_rostime()
+                path_point.header.frame_id = "/car_rtk"
+                # bicycle motion model 
+                distance = self.speed * float(t)
+                length = WHEEL_BASE
+                d_yaw = tan(self.steer_angle) * distance / length
+                if abs(d_yaw) < TURN_RATE_TOLERANCE:
+                    # approximate straight line motion
+                    path_point.pose.position.x = distance
+                else: 
+                    # bicycle motion model
+                    radius = distance / d_yaw
+                    cx = 0
+                    cy = radius
+                    new_yaw = d_yaw % (2.0 * pi)
+                    path_point.pose.position.x = cx + (sin(new_yaw) * radius)
+                    path_point.pose.position.y = cy - (cos(new_yaw) * radius)
+                predicted_path_msg.poses.append(path_point)
+            self.projected_path_pub.publish(predicted_path_msg)
 
     def imu_cb(self, data):
         xPos, yPos = (0,0)
@@ -70,20 +104,23 @@ class follow_path_node:
             xPos = self.curXPos
         if self.curYPos is not None:
             yPos = self.curYPos
+        xOri,yOri,zOri,wOri = (data.orientation.x, data.orientation.y,
+                               data.orientation.z, data.orientation.w)
         imuMsg = PoseStamped()
         imuMsg.header.stamp = rospy.get_rostime()
         imuMsg.header.frame_id = "/world"
         imuMsg.pose.position.x = xPos
         imuMsg.pose.position.y = yPos
-        imuMsg.pose.orientation.x = data.orientation.x
-        imuMsg.pose.orientation.y = data.orientation.y
-        imuMsg.pose.orientation.z = data.orientation.z
-        imuMsg.pose.orientation.w = data.orientation.w
+        imuMsg.pose.orientation.x = xOri
+        imuMsg.pose.orientation.y = yOri
+        imuMsg.pose.orientation.z = zOri
+        imuMsg.pose.orientation.w = wOri
         self.imu_pose_pub.publish(imuMsg)
-        _,_,self.heading = euler_from_quaternion((imuMsg.pose.orientation.x,
-                                                  imuMsg.pose.orientation.y,
-                                                  imuMsg.pose.orientation.z,
-                                                  imuMsg.pose.orientation.w))
+        _,_,self.heading = euler_from_quaternion((xOri,yOri,zOri,wOri))
+        self.car_pose_tf_br.sendTransform((xPos, yPos, 0), 
+                                          (xOri, yOri, zOri, wOri),
+                                          rospy.Time.now(),
+                                          "car_rtk", "world")
 
     def rtk_cb(self, data):
         #rospy.loginfo(rospy.get_caller_id() + "I heard %s", data)
@@ -152,7 +189,6 @@ class follow_path_node:
         steerValue = headingDiff / (STEER_DAMPENING * pi)    ######### FINE TUNE STEERING DAMPENING HERE ##############
         control_msg.steer_angle = steerValue
         control_msg.speed = CONSTANT_SPEED
-        rospy.loginfo("Steer: " + str(steerValue))
         self.car_control_pub.publish(control_msg)
 
 if __name__ == '__main__':
