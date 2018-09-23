@@ -83,7 +83,7 @@ class follow_path_node:
                 # bicycle motion model 
                 distance = self.speed * float(t)
                 length = WHEEL_BASE
-                d_yaw = tan(self.steer_angle) * distance / length
+                d_yaw = -1.0 * tan(self.steer_angle) * distance / length
                 if abs(d_yaw) < TURN_RATE_TOLERANCE:
                     # approximate straight line motion
                     path_point.pose.position.x = distance
