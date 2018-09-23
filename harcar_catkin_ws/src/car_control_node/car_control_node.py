@@ -20,7 +20,8 @@ class car_control_node:
             # do whatever you want here
             current_speed, current_steer = self.car.get_speed_and_steer()
             state_msg = CarControl()
-            state_msg.speed = current_speed, current_steer
+            state_msg.speed = current_speed
+            state_msg.steer_angle = current_steer
             state_pub.publish(state_msg)
             rate.sleep()
 
