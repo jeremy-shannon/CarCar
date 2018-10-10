@@ -24,6 +24,8 @@ class car_control_node:
             state_msg.steer_angle = current_steer
             state_pub.publish(state_msg)
             rate.sleep()
+        
+        self.car.shut_down()
 
     def control_cb(self, data):
         #rospy.loginfo(rospy.get_caller_id() + "I heard %s", data)

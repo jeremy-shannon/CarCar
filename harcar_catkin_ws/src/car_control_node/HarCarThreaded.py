@@ -70,7 +70,7 @@ class HarCar:
         if speed_val < 0:
             #pwm_val = int(MIN_REVERSE + float(speed_val) * float(MIN_REVERSE - MAX_REVERSE))
             #for now just dont worry about negative speed! just set it to zero
-            pwm_val = ZERO_SPEED
+            pwm_val = int((26.472 * speed_val) + 605)
         elif speed_val > 0:
             #Magic formula to convert speed(m/s) to corresponding pwm value
             pwm_val = int((26.472 * speed_val) + 680.45)

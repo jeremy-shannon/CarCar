@@ -6,7 +6,7 @@ from math import pi
 
 # JOYSTICK RANGES:
 # left stick (axes[0]): full left = 1.0, full right = -1.0
-# right trigger (axes[5]): nominal = 1.0, fully pressed = -1.0
+# left/right trigger (axes[2/5]): nominal = 1.0, fully pressed = -1.0
 # A button (buttons[0]): [0,1]
 
 class teleop_node:
@@ -21,11 +21,14 @@ class teleop_node:
 
     def joy_cb(self, data):
         left_stick = data.axes[0]
+        left_trigger = data.axes[2]
         right_trigger = data.axes[5]
         a_button = data.buttons[0]
 
         steer = left_stick * pi / 6.0
-        speed = -0.5 * (right_trigger - 1.0)
+        forward_speed = -0.5 * (right_trigger - 1.0)
+        backward_speed = -0.5 * (left_trigger - 1.0)
+        speed = forward_speed - backward_speed
 
         car_cmd_msg = CarControl()
         car_cmd_msg.steer_angle = steer
