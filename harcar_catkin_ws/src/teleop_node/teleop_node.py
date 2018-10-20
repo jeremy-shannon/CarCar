@@ -9,6 +9,8 @@ from math import pi
 # right trigger (axes[5]): nominal = 1.0, fully pressed = -1.0
 # A button (buttons[0]): [0,1]
 
+TURBO_MODE_ACTIVE = False
+
 class teleop_node:
     def __init__(self):
         rospy.init_node('teleop_node', anonymous=True)
@@ -16,6 +18,8 @@ class teleop_node:
 
         self.car_cmd_pub = rospy.Publisher("/car_control", CarControl, queue_size=1)
         rospy.Subscriber("/joy", Joy, self.joy_cb)
+
+        speed_multiplier = -0.5
         
         rospy.spin()
 
@@ -24,8 +28,17 @@ class teleop_node:
         right_trigger = data.axes[5]
         a_button = data.buttons[0]
 
+        #This should only execute when the A button is pressed. However, if a user holds the button the value will remain at one. So if the user is holding the A button and presses another button it will call the callback again and toggle the TURBO_MODE. Not good!
+        if a_button == True:
+            if TURBO_MODE_ACTIVE == True:
+                TURBO_MODE_ACTIVE = False
+                self.speed_multiplier = -0.5
+            else:
+                TURBO_MODE_ACTIVE = True
+                self.speed_multiplier = -1.0
+
         steer = left_stick * pi / 6.0
-        speed = -0.5 * (right_trigger - 1.0)
+        speed = self.speed_multiplier * (right_trigger - 1.0)
 
         car_cmd_msg = CarControl()
         car_cmd_msg.steer_angle = steer
