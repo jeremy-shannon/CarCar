@@ -11,4 +11,7 @@
 
     <!--car control Node -->
     <include file="$(find car_control_node)/launch/car_control_node.launch"/>
+
+	<!--record path Node -->
+    <include file="$(find record_path_node)/launch/record_path_node.launch"/>
 </launch>
