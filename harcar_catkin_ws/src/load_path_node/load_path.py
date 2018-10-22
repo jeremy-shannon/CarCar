@@ -14,6 +14,7 @@ def load_points():
     lat0, lon0 = (42.51300695,-83.44528012)   # IF YOU EVER GO OUTSIDE THE HARMAN CABOT NORTH VICINITY, CHANGE THIS!!!!
     m_per_lat = (111132.954 - 559.822 * math.cos(2 * lat0) + 1.175 * math.cos(4 * lat0))
     m_per_lon = (311132.954 * math.cos(lon0))
+	#This should not be an absolute path.
     with open('/home/ubuntu/harcar_catkin_ws/src/load_path_node/Figure8_spaced30.csv') as csvfile:
         readCSV = csv.reader(csvfile, delimiter=',')
         for row in readCSV:
@@ -36,4 +37,4 @@ if __name__ == '__main__':
     try:
         load_points()
     except rospy.ROSInterruptException:
-        pass
+        rospy.logerr('Could not start load path node.')
