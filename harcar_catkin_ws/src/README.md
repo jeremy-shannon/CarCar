@@ -9,3 +9,5 @@ https://github.com/ros-geographic-info/geographic_info
 https://github.com/ros-geographic-info/unique_identifier
 
 https://github.com/DelparteLabs/rtimulib_ros
+
+https://github.com/OTL/cv_camera
