@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+
 import rospy
 from HarCarThreaded import HarCar
 from harcar_msgs.msg import CarControl
@@ -6,7 +7,7 @@ from harcar_msgs.msg import CarControl
 class car_control_node:
     def __init__(self):
         rospy.init_node('car_control_node', anonymous=True)
-        rospy.loginfo(rospy.get_caller_id() + "INITED Car_Control_node")
+        rospy.loginfo(rospy.get_caller_id() + " -- INITED Car_Control_node")
         #create harcar object which handles m/s & rad. conversions into 
         #pwm and uses pwm library to input that info to pwm
         self.car = HarCar()
@@ -16,14 +17,18 @@ class car_control_node:
         
         rate = rospy.Rate(10) # Hz. 
 
-        while not rospy.is_shutdown():
-            # do whatever you want here
-            current_speed, current_steer = self.car.get_speed_and_steer()
-            state_msg = CarControl()
-            state_msg.speed = current_speed
-            state_msg.steer_angle = current_steer
-            state_pub.publish(state_msg)
-            rate.sleep()
+        try:
+            while not rospy.is_shutdown():
+                # do whatever you want here
+                current_speed, current_steer = self.car.get_speed_and_steer()
+                state_msg = CarControl()
+                state_msg.speed = current_speed
+                state_msg.steer_angle = current_steer
+                state_pub.publish(state_msg)
+                rate.sleep()
+        except KeyboardInterrupt:
+            rospy.loginfo('car_control_node received keyboard interrupt')
+            self.car.shut_down()
         
         self.car.shut_down()
 
