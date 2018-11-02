@@ -28,7 +28,7 @@ class HarCar:
         # NOTE: PWM disable
         self.pwm = Adafruit_PCA9685.PCA9685()
         self.pwm.set_pwm_freq(100)
-            
+
         self.currentSpeed = ZERO_SPEED
         self.currentSteer = ZERO_STEER
         self.targetSpeed = ZERO_SPEED
@@ -47,8 +47,8 @@ class HarCar:
 
     def shut_down(self):
         print('***************Shutting down HarCar*****************')
-        car.set_steer()
-        car.set_speed()
+        self.set_steer()
+        self.set_speed()
         time.sleep(2)
         self.shutDownThreads = True
     
@@ -90,10 +90,12 @@ class HarCar:
             elif self.targetSpeed < self.currentSpeed:
                 self.currentSpeed -= 1
             # NOTE: PWM disable
-            print('set speed pwm: ' + str(self.currentSpeed))
+            #print('set speed pwm: ' + str(self.currentSpeed))
             self.pwm.set_pwm(0,0,self.currentSpeed)
-            if self.currentSpeed > MIN_REVERSE and self.currentSpeed < MIN_FORWARD:
+            if (self.currentSpeed > MIN_REVERSE and self.currentSpeed < MIN_FORWARD) \
+                or (abs(self.currentSpeed - ZERO_SPEED) > abs(self.targetSpeed - ZERO_SPEED)):
                 # blow right on through the deadband - NO SLEEPING IN THE DEADBAND!!
+                # also let it quickly slow down, if that's the case
                 continue
             time.sleep(1. / self.speedRate)
 
@@ -119,8 +121,11 @@ class HarCar:
             elif self.targetSteer < self.currentSteer:
                 self.currentSteer -= 1
             # NOTE: PWM disable
-            print('set steer pwm: ' + str(self.currentSteer))
+            #print('set steer pwm: ' + str(self.currentSteer))
             self.pwm.set_pwm(1,0,self.currentSteer)
+            if abs(self.currentSteer - ZERO_STEER) > abs(self.targetSteer - ZERO_STEER):
+                # allow car to quickly move back to center
+                continue
             time.sleep(1. / self.steerRate)
 
 if __name__ == '__main__':
