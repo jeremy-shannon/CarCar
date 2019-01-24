@@ -7,7 +7,7 @@ from harcar_msgs.msg import CarControl
 class car_control_node:
     def __init__(self):
         rospy.init_node('car_control_node', anonymous=True)
-        rospy.loginfo(rospy.get_caller_id() + " -- INITED Car_Control_node")
+        rospy.loginfo(rospy.get_caller_id() + " -- INITIALIZED Car_Control_node")
         #create harcar object which handles m/s & rad. conversions into 
         #pwm and uses pwm library to input that info to pwm
         self.car = HarCar()
