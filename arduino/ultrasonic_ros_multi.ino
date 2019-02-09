@@ -2,6 +2,7 @@
 #include <ros/time.h>
 #include <sensor_msgs/Range.h>
 #define USE_USBCON
+//rosrun rosserial_python serial_node.py /dev/ttyACM0
 
 ros::NodeHandle  nh;
 
@@ -12,8 +13,8 @@ ros::Publisher pub_range_1( "/ultrasonic_1", &range_msg_1);
 ros::Publisher pub_range_2( "/ultrasonic_2", &range_msg_2);
 ros::Publisher pub_range_3( "/ultrasonic_3", &range_msg_3);
 
-int pingPin[] = { 0, 1, 2 };
-int inPin[] = { 8, 9, 10 };
+int triggerPin[] = { 2, 3, 4 };
+int echoPin[] = { 8, 9, 10 };
 long range_time = 0;
 char frameid_1[] = "/ultrasonic_1";
 char frameid_2[] = "/ultrasonic_2";
@@ -23,6 +24,8 @@ char frameid_3[] = "/ultrasonic_3";
 void setup() {
   nh.initNode();
   nh.advertise(pub_range_1);
+  nh.advertise(pub_range_2);
+  nh.advertise(pub_range_3);
   
   range_msg_1.radiation_type = sensor_msgs::Range::ULTRASOUND;
   range_msg_1.header.frame_id =  frameid_1;
@@ -79,18 +82,18 @@ float getRange( int sensorID )
   
   // The PING))) is triggered by a HIGH pulse of 2 or more microseconds.
   // Give a short LOW pulse beforehand to ensure a clean HIGH pulse:
-  pinMode(pingPin[sensorID], OUTPUT);
-  digitalWrite(pingPin[sensorID], LOW);
+  pinMode(triggerPin[sensorID], OUTPUT);
+  digitalWrite(triggerPin[sensorID], LOW);
   delayMicroseconds(2);
-  digitalWrite(pingPin[sensorID], HIGH);
+  digitalWrite(triggerPin[sensorID], HIGH);
   delayMicroseconds(10);
-  digitalWrite(pingPin[sensorID], LOW);
+  digitalWrite(triggerPin[sensorID], LOW);
   
   // The same pin is used to read the signal from the PING))): a HIGH
   // pulse whose duration is the time (in microseconds) from the sending
   // of the ping to the reception of its echo off of an object.
-  pinMode(inPin[sensorID], INPUT);
-  duration = pulseIn(inPin[sensorID], HIGH);
+  pinMode(echoPin[sensorID], INPUT);
+  duration = pulseIn(echoPin[sensorID], HIGH);
   
   // convert the time into a distance
   return microsecondsToCentimeters(duration);
