@@ -1,0 +1,67 @@
+<robot name="HarCar">
+	<link name="rear_axle_origin" />
+	<link name="sample_child_link" />
+
+	<joint name="imu" type="continuous">
+		<parent link="rear_axle_origin"/>
+		<child link="sample_child_link" />
+		<origin xyz="0 0 0" rpy="0 0 0" />
+		<axis xyz="0 0 0" />
+	</joint>
+
+	<joint name="rtk" type="continuous">
+		<parent link="rear_axle_origin"/>
+		<child link="sample_child_link" />
+		<origin xyz="0 0 0" rpy="0 0 0" />
+		<axis xyz="0 0 0" />
+	</joint>
+
+	<joint name="ultrasonic_fl" type="continuous">
+		<parent link="rear_axle_origin"/>
+		<child link="sample_child_link" />
+		<origin xyz="0 0 0" rpy="0 0 0" />
+		<axis xyz="0 0 0" />
+	</joint>
+
+	<joint name="utrasonic_fc" type="continuous">
+		<parent link="rear_axle_origin"/>
+		<child link="sample_child_link" />
+		<origin xyz="0 0 0" rpy="0 0 0" />
+		<axis xyz="0 0 0" />
+	</joint>
+
+	<joint name="ultrasonic_fr" type="continuous">
+		<parent link="rear_axle_origin"/>
+		<child link="sample_child_link" />
+		<origin xyz="0 0 0" rpy="0 0 0" />
+		<axis xyz="0 0 0" />
+	</joint>
+
+	<joint name="wheel_fl" type="continuous">
+		<parent link="rear_axle_origin"/>
+		<child link="sample_child_link" />
+		<origin xyz="0 0 0" rpy="0 0 0" />
+		<axis xyz="0 0 0" />
+	</joint>
+
+	<joint name="wheel_fr" type="continuous">
+		<parent link="rear_axle_origin"/>
+		<child link="sample_child_link" />
+		<origin xyz="0 0 0" rpy="0 0 0" />
+		<axis xyz="0 0 0" />
+	</joint>
+
+	<joint name="wheel_rl" type="continuous">
+		<parent link="rear_axle_origin"/>
+		<child link="sample_child_link" />
+		<origin xyz="0 0 0" rpy="0 0 0" />
+		<axis xyz="0 0 0" />
+	</joint>
+
+	<joint name="wheel_rr" type="continuous">
+		<parent link="rear_axle_origin"/>
+		<child link="sample_child_link" />
+		<origin xyz="0 0 0" rpy="0 0 0" />
+		<axis xyz="0 0 0" />
+	</joint>
+</robot>
