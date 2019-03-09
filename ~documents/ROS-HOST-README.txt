@@ -1,6 +1,11 @@
 I'm hacking all of your systems.
 
-YOUR PASSWORD IS "jer"
+YOUR PASSWORD IS "harcar"
+
+To connect to harcar (it should be in wifi access point mode):
+connect wifi to "harcar1860F" (or something similar), password: robotseverywhere
+ssh ubuntu@10.42.0.1
+password: harcar
 
 
 -------------------VM shared folder---------------------------------
@@ -25,7 +30,7 @@ sudo mount -t vboxsf -o uid=$UID,gid=$(id -g) HarCar ~/sharedfolder
 2. in VM go to "devices" menu, "usb", then select "microsoft controller" to pass it through
 3. "sudo modprobe xpad"
 4. controller should be available (probably as js6)
-5. (if connecting to harcarPi - must be running roscore!) "export ROS_MASTER_URI=http://harcarpi.local:11311"
+5. (if connecting to harcarPi - must be running roscore!) "export ROS_MASTER_URI=http://harcar1:11311"
 6. 'rosparam set joy_node/dev "/dev/input/js6"'
 7(?). 'rosparam set joy_node/deadzone "0.3"'
 7(?). 'rosparam set joy_node/coalesce_interval  "0.05"'
