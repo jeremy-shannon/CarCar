@@ -1,10 +1,10 @@
-# HarCar!
+# CarCar!
 
-## Harman Self-Driving Car - Mini Version
+## MarHan Self-Driving Car - Mini Version
 
 ---
 
-This code is for the HarCar RC car prototype platform built on the Traxxas Fiesta Rally 1/10 scale RC car. The current hardware configuration includes:
+This code is for the CarCar RC car prototype platform built on the Traxxas Fiesta Rally 1/10 scale RC car. The current hardware configuration includes:
 - Rev Spark motor driver
 - Raspberry Pi
 - Adafruit PCA9685 PWM driver module
@@ -18,7 +18,7 @@ Future hardware will include:
 
 ## ROS Migration
 
-The codebase for HarCar is now contained fully within the `harcar_catkin_ws` folder, which is a ROS "catkin" workspace. 
+The codebase for CarCar is now contained fully within the `harcar_catkin_ws` folder, which is a ROS "catkin" workspace. 
 
 The remaining scripts, listed below, are from the pre-ROS implementation, which followed a pre-determined path, and are for historical reference only.
 
